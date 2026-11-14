@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Porsche Sales Intelligence</title>
+  <style>
+    :root {
+      --bg: #f4f4f2;
+      --surface: #ffffff;
+      --ink: #131417;
+      --muted: #7d8087;
+      --soft: #a3a6ab;
+      --line: #e7e7e3;
+      --line-strong: #d7d7d2;
+      --accent: #d5001c;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, system-ui, sans-serif;
+      display: grid;
+      grid-template-rows: 62px auto minmax(0, 1fr);
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 24px;
+      background: var(--surface);
+      border-top: 3px solid var(--accent);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0
+    }
+
+    .wm {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: .38em;
+      margin-right: -.38em;
+      white-space: nowrap
+    }
+
+    .wm-div {
+      width: 1px;
+      height: 16px;
+      background: var(--line-strong)
+    }
+
+    .wm-sub {
+      font-size: 9px;
+      letter-spacing: .26em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      white-space: nowrap
+    }
+
+    .top-meta {
+      font-size: 9px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: right;
+      line-height: 1.9;
+      white-space: nowrap
+    }
+
+    .top-meta b {
+      color: var(--ink);
+      font-weight: 600
+    }
+
+    .filterbar {
+      display: flex;
+      align-items: flex-end;
+      gap: 18px;
+      flex-wrap: wrap;
+      padding: 11px 24px 12px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px
+    }
+
+    .filter-group label {
+      font-size: 8.5px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600
+    }
+
+    select {
+      font-family: inherit
+    }
+
+    .filter-group select {
+      appearance: none;
+      -webkit-appearance: none;
+      height: 33px;
+      min-width: 158px;
+      max-width: 215px;
+      padding: 0 30px 0 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 2px;
+      background: #fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%237d8087'/%3E%3C/svg%3E") no-repeat right 10px center;
+      font-size: 11.5px;
+      color: var(--ink);
+      outline: none;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+
+    .filter-group select:hover {
+      border-color: #b9b9b4
+    }
+
+    .filter-group select:focus {
+      border-color: var(--ink)
+    }
+
+    .filter-spacer {
+      flex: 1
+    }
+
+    .result-count {
+      font-size: 9px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-bottom: 10px;
+      white-space: nowrap
+    }
+
+    .result-count b {
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 700;
+      margin-right: 2px
+    }
+
+    .clear-btn {
+      margin-bottom: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 9px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--ink);
+      padding: 4px 2px 5px;
+      border-bottom: 1px solid var(--accent);
+      transition: color .15s;
+    }
+
+    .clear-btn:hover {
+      color: var(--accent)
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 440px minmax(0, 1fr);
+      gap: 16px;
+      min-height: 0;
+      padding: 16px 24px 20px
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .table-panel {
+      padding: 16px 14px 10px
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding: 0 2px
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .panel-title h2::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+      display: inline-block
+    }
+
+    #rowCount {
+      font-size: 9px;
+      letter-spacing: .06em;
+      color: var(--soft);
+      white-space: nowrap
+    }
+
+    #search {
+      width: 100%;
+      height: 34px;
+      margin-bottom: 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 2px;
+      background: #fbfbfa;
+      color: var(--ink);
+      padding: 0 11px;
+      font-size: 11.5px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+
+    #search:focus {
+      border-color: var(--ink);
+      background: #fff
+    }
+
+    #search::placeholder {
+      color: #adadb0
+    }
+
+    .table-wrap {
+      overflow: auto;
+      flex: 1;
+      margin: 0 -6px;
+      padding: 0 6px
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 850px;
+      font-size: 11px;
+      white-space: nowrap
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--surface);
+      text-align: left;
+      font-weight: 700;
+      font-size: 8.5px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 8px 7px;
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    tbody td {
+      padding: 7px;
+      border-bottom: 1px solid #f1f1ee;
+      color: #2b2d31
+    }
+
+    tbody tr {
+      transition: background .1s
+    }
+
+    tbody tr:hover {
+      background: #fafaf8
+    }
+
+    td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums
+    }
+
+    td.invalid {
+      color: #b02a37;
+      font-style: italic;
+      font-size: 10px
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 2px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      line-height: 1.5
+    }
+
+    .st-green {
+      background: #eef6f0;
+      color: #1f6b3d;
+      border: 1px solid #d8e9de
+    }
+
+    .st-blue {
+      background: #eef3fa;
+      color: #2a5787;
+      border: 1px solid #dae4f2
+    }
+
+    .st-amber {
+      background: #faf4e7;
+      color: #8a6416;
+      border: 1px solid #efe4cb
+    }
+
+    .st-red {
+      background: #fbeeee;
+      color: #a1262f;
+      border: 1px solid #f0d9db
+    }
+
+    .st-gray {
+      background: #f2f2f1;
+      color: #666a70;
+      border: 1px solid #e5e5e2
+    }
+
+    .dash {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 6px;
+      padding-bottom: 4px;
+      scrollbar-gutter: stable
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px
+    }
+
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 16px 16px 13px;
+      min-height: 96px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: box-shadow .2s;
+    }
+
+    .kpi::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      top: 0;
+      width: 20px;
+      height: 2px;
+      background: var(--accent)
+    }
+
+    .kpi:hover {
+      box-shadow: 0 6px 22px rgba(19, 20, 23, .06)
+    }
+
+    .k-label {
+      font-size: 8.5px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600
+    }
+
+    .k-value {
+      font-size: 26px;
+      font-weight: 300;
+      letter-spacing: -.02em;
+      line-height: 1.1;
+      margin-top: 7px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .k-value.small {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0;
+      margin-top: 10px
+    }
+
+    .k-note {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 2px 2px -2px
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 10px;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      font-weight: 700
+    }
+
+    .section-head::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--line)
+    }
+
+    .insights {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 15px 17px 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      min-height: 26px
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap
+    }
+
+    .card h3::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+      display: inline-block;
+      flex: none
+    }
+
+    .note {
+      font-size: 8.5px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--soft);
+      white-space: nowrap
+    }
+
+    .insight-body {
+      flex: 1;
+      min-height: 0
+    }
+
+    .empty {
+      font-size: 11px;
+      color: var(--soft);
+      padding: 20px 0;
+      text-align: center;
+      line-height: 1.6
+    }
+
+    .rank {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 9px;
+      padding: 9px 0;
+      border-bottom: 1px solid #f2f2ef
+    }
+
+    .rank:first-child {
+      padding-top: 1px
+    }
+
+    .rank:last-child {
+      border-bottom: none;
+      padding-bottom: 0
+    }
+
+    .rank-idx {
+      font-size: 9.5px;
+      color: #b9bbc0;
+      padding-top: 2px;
+      font-variant-numeric: tabular-nums
+    }
+
+    .rank-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px
+    }
+
+    .rank-city {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: -.01em
+    }
+
+    .rank-city em {
+      font-style: normal;
+      font-size: 8.5px;
+      color: var(--soft);
+      margin-left: 5px;
+      letter-spacing: .08em
+    }
+
+    .rank-units {
+      font-size: 9px;
+      color: var(--muted);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums
+    }
+
+    .rank-model {
+      font-size: 9.5px;
+      color: var(--muted);
+      margin: 2px 0 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .rank-model span {
+      color: var(--soft)
+    }
+
+    .bar {
+      height: 3px;
+      background: #f0f0ed;
+      border-radius: 99px;
+      overflow: hidden
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      border-radius: 99px;
+      background: var(--ink)
+    }
+
+    .rank:first-child .bar i {
+      background: var(--accent)
+    }
+
+    .winner {
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      padding: 6px 0 13px
+    }
+
+    .winner-year {
+      font-size: 54px;
+      font-weight: 200;
+      letter-spacing: -.04em;
+      line-height: .85;
+      position: relative;
+      padding-bottom: 11px
+    }
+
+    .winner-year::after {
+      content: "";
+      position: absolute;
+      left: 2px;
+      bottom: 0;
+      width: 30px;
+      height: 2px;
+      background: var(--accent)
+    }
+
+    .winner-meta {
+      font-size: 9px;
+      color: var(--muted);
+      line-height: 1.8;
+      padding-bottom: 3px
+    }
+
+    .winner-meta b {
+      font-size: 12px;
+      color: var(--ink);
+      font-weight: 600
+    }
+
+    .mini-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-top: 2px
+    }
+
+    .mini-row {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) 34px;
+      align-items: center;
+      gap: 10px
+    }
+
+    .mini-label {
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+      color: #3a3c40
+    }
+
+    .mini-row .bar {
+      height: 3px
+    }
+
+    .mini-row:first-child .bar i {
+      background: var(--accent)
+    }
+
+    .mini-value {
+      font-size: 10px;
+      color: var(--muted);
+      text-align: right;
+      font-variant-numeric: tabular-nums
+    }
+
+    .insight-foot {
+      margin-top: 11px;
+      padding-top: 9px;
+      border-top: 1px solid #f2f2ef;
+      font-size: 8.5px;
+      color: var(--soft);
+      line-height: 1.6
+    }
+
+    .city-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px
+    }
+
+    .city-name {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -.015em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .city-name em {
+      font-style: normal;
+      font-size: 9px;
+      color: var(--soft);
+      margin-left: 5px;
+      letter-spacing: .08em;
+      font-weight: 400
+    }
+
+    .m-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px
+    }
+
+    .m-row .m-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 5px
+    }
+
+    .m-name {
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .m-meta {
+      font-size: 9px;
+      color: var(--muted);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums
+    }
+
+    .m-row:first-child .bar i {
+      background: var(--accent)
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 13px;
+      padding-top: 11px;
+      border-top: 1px solid #f2f2ef
+    }
+
+    .stats span {
+      display: block;
+      font-size: 8px;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600
+    }
+
+    .stats b {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 600;
+      margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap
+    }
+
+    .mini-select {
+      appearance: none;
+      -webkit-appearance: none;
+      height: 26px;
+      max-width: 168px;
+      padding: 0 24px 0 8px;
+      border: 1px solid var(--line-strong);
+      border-radius: 2px;
+      background: #fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4'%3E%3Cpath d='M0 0l3.5 4L7 0z' fill='%237d8087'/%3E%3C/svg%3E") no-repeat right 8px center;
+      font-size: 9.5px;
+      color: var(--ink);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .mini-select:focus {
+      border-color: var(--ink)
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px
+    }
+
+    .chart-card {
+      height: 286px
+    }
+
+    .canvas-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 0
+    }
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block
+    }
+
+    .tip {
+      position: absolute;
+      z-index: 5;
+      pointer-events: none;
+      background: #141518;
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 3px;
+      padding: 7px 10px;
+      font-size: 10.5px;
+      line-height: 1.6;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, .28);
+      color: #fff;
+      opacity: 0;
+      transition: opacity .08s;
+      max-width: 240px;
+    }
+
+    .tip b {
+      display: block;
+      font-size: 10.5px;
+      letter-spacing: .04em
+    }
+
+    .tip span {
+      color: #b7bac1
+    }
+
+    .footnote {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 8.5px;
+      color: var(--soft);
+      letter-spacing: .03em;
+      padding: 0 2px 4px
+    }
+
+    .footnote::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      flex: none
+    }
+
+    ::-webkit-scrollbar {
+      width: 9px;
+      height: 9px
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #d9d9d4;
+      border-radius: 99px;
+      border: 2px solid var(--surface)
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #c4c4be
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent
+    }
+
+    @media (max-width:1320px) {
+      body {
+        display: block;
+        overflow: auto;
+        height: auto
+      }
+
+      .topbar {
+        height: 60px;
+        padding: 0 20px
+      }
+
+      .filterbar {
+        padding: 10px 20px 12px
+      }
+
+      main {
+        grid-template-columns: 1fr;
+        height: auto;
+        padding: 16px 20px 24px
+      }
+
+      .table-panel {
+        max-height: 62vh
+      }
+
+      .dash {
+        overflow: visible;
+        padding-right: 0
+      }
+
+      .kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr))
+      }
+
+      .insights {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+      }
+    }
+
+    @media (max-width:820px) {
+
+      .wm-sub,
+      .wm-div,
+      .top-meta,
+      .filter-spacer {
+        display: none
+      }
+
+      .filter-group {
+        flex: 1 1 40%
+      }
+
+      .filter-group select {
+        width: 100%;
+        max-width: none
+      }
+
+      .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+      }
+
+      .insights {
+        grid-template-columns: 1fr
+      }
+
+      .charts {
+        grid-template-columns: 1fr
+      }
+
+      .chart-card {
+        height: 280px
+      }
+
+      .result-count,
+      .clear-btn {
+        margin-bottom: 0;
+        padding-bottom: 0
+      }
+
+      .clear-btn {
+        border-bottom: none;
+        text-decoration: underline;
+        text-underline-offset: 3px
+      }
+    }
+  </style>
+  <style>
+    :root {
+      --bg: #0a0b0d;
+      --surface: #111318;
+      --surface-2: #0b0c0f;
+      --ink: #e9ebee;
+      --muted: #8e939b;
+      --soft: #646a73;
+      --line: rgba(255, 255, 255, .075);
+      --line-strong: rgba(255, 255, 255, .14);
+      --accent: #d5001c;
+    }
+
+    body {
+      background:
+        radial-gradient(1100px 540px at 88% -10%, rgba(213, 0, 28, .12), transparent 62%),
+        radial-gradient(900px 520px at -8% 108%, rgba(201, 162, 74, .055), transparent 58%),
+        var(--bg);
+    }
+
+    .topbar,
+    .filterbar {
+      background: var(--surface-2)
+    }
+
+    .top-meta b {
+      color: var(--ink)
+    }
+
+    .panel,
+    .card,
+    .kpi {
+      background: linear-gradient(180deg, #14171c 0%, #101216 100%)
+    }
+
+    .filter-group select {
+      background-color: #16191f;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%238e939b'/%3E%3C/svg%3E");
+      color: var(--ink);
+      border-color: var(--line-strong);
+    }
+
+    .filter-group select:hover {
+      border-color: rgba(255, 255, 255, .26)
+    }
+
+    .filter-group select:focus {
+      border-color: rgba(255, 255, 255, .48)
+    }
+
+    .filter-group select option {
+      background: #16191f;
+      color: var(--ink)
+    }
+
+    #search {
+      background: #0e1014;
+      border-color: var(--line-strong);
+      color: var(--ink)
+    }
+
+    #search:focus {
+      background: #0e1014;
+      border-color: rgba(255, 255, 255, .45)
+    }
+
+    #search::placeholder {
+      color: #5f646c
+    }
+
+    thead th {
+      background: #14171c;
+      border-bottom-color: var(--line-strong)
+    }
+
+    tbody td {
+      color: #c9ccd1;
+      border-bottom-color: rgba(255, 255, 255, .05)
+    }
+
+    tbody tr:hover {
+      background: rgba(255, 255, 255, .032)
+    }
+
+    td.invalid {
+      color: #f08a92
+    }
+
+    .st-green {
+      background: rgba(95, 158, 120, .16);
+      color: #96d3ad;
+      border: 1px solid rgba(95, 158, 120, .32)
+    }
+
+    .st-blue {
+      background: rgba(93, 135, 189, .16);
+      color: #9dbde8;
+      border: 1px solid rgba(93, 135, 189, .32)
+    }
+
+    .st-amber {
+      background: rgba(195, 154, 74, .15);
+      color: #dcc084;
+      border: 1px solid rgba(195, 154, 74, .3)
+    }
+
+    .st-red {
+      background: rgba(196, 89, 99, .16);
+      color: #e9a2a9;
+      border: 1px solid rgba(196, 89, 99, .32)
+    }
+
+    .st-gray {
+      background: rgba(139, 144, 152, .14);
+      color: #b6bbc3;
+      border: 1px solid rgba(139, 144, 152, .28)
+    }
+
+    .kpi:hover {
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .35)
+    }
+
+    .rank {
+      border-bottom-color: rgba(255, 255, 255, .06)
+    }
+
+    .rank-idx {
+      color: #5b6068
+    }
+
+    .rank-model span {
+      color: var(--soft)
+    }
+
+    .bar {
+      background: rgba(255, 255, 255, .08)
+    }
+
+    .bar i {
+      background: #d7d9dd
+    }
+
+    .winner-year {
+      color: var(--ink)
+    }
+
+    .winner-meta b {
+      color: var(--ink)
+    }
+
+    .mini-label {
+      color: #c9ccd1
+    }
+
+    .insight-foot {
+      border-top-color: rgba(255, 255, 255, .06)
+    }
+
+    .mini-select {
+      background-color: #16191f;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4'%3E%3Cpath d='M0 0l3.5 4L7 0z' fill='%238e939b'/%3E%3C/svg%3E");
+      color: var(--ink);
+      border-color: var(--line-strong);
+    }
+
+    .mini-select:focus {
+      border-color: rgba(255, 255, 255, .45)
+    }
+
+    .mini-select option {
+      background: #16191f;
+      color: var(--ink)
+    }
+
+    .stats {
+      border-top-color: rgba(255, 255, 255, .06)
+    }
+
+    .stats b {
+      color: var(--ink)
+    }
+
+    .tip {
+      background: #1b1e24;
+      border-color: rgba(255, 255, 255, .14)
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #2a2e37;
+      border: 2px solid var(--surface)
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #363b45
+    }
+
+    .footnote {
+      color: #6b7078
+    }
+
+    .clear-btn {
+      color: var(--ink)
+    }
+
+    .card h3,
+    .section-head h2,
+    .panel-title h2 {
+      color: var(--ink)
+    }
+
+    .table-wrap,
+    .dash {
+      scrollbar-width: thin;
+      scrollbar-color: #2a2e37 #101216
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="wm">PORSCHE</span>
+      <span class="wm-div"></span>
+      <span class="wm-sub">Sales Intelligence</span>
+    </div>
+    <div class="top-meta">porsche_database_sanitized.xlsx<br><b id="baseCount">100</b> registros · USD · base sanitizada
+    </div>
+  </header>
+  <div class="filterbar">
+    <div class="filter-group"><label for="fModel">Modelo</label><select id="fModel"></select></div>
+    <div class="filter-group"><label for="fYear">Ano-modelo</label><select id="fYear"></select></div>
+    <div class="filter-group"><label for="fCity">Cidade</label><select id="fCity"></select></div>
+    <div class="filter-group"><label for="fPay">Pagamento</label><select id="fPay"></select></div>
+    <div class="filter-spacer"></div>
+    <span class="result-count" id="resultCount"></span>
+    <button class="clear-btn" id="clearFilters">Limpar filtros</button>
+  </div>
+  <main>
+    <aside class="panel table-panel">
+      <div class="panel-title">
+        <h2>Base de dados</h2>
+        <span id="rowCount"></span>
+      </div>
+      <input id="search" type="text" placeholder="Buscar cliente, cidade, vendedor..." autocomplete="off">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Modelo</th>
+              <th>Ano</th>
+              <th>Preço</th>
+              <th>Milhagem</th>
+              <th>Pagamento</th>
+              <th>Cidade/UF</th>
+              <th>Vendedor</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </aside>
+    <section class="dash">
+      <div class="kpis">
+        <div class="kpi"><span class="k-label">Receita total</span><span class="k-value" id="kpiRevenue"></span><span
+            class="k-note" id="kpiRevenueNote"></span></div>
+        <div class="kpi"><span class="k-label">Unidades vendidas</span><span class="k-value" id="kpiUnits"></span><span
+            class="k-note" id="kpiUnitsNote"></span></div>
+        <div class="kpi"><span class="k-label">Preço médio</span><span class="k-value" id="kpiAvg"></span><span
+            class="k-note">média por venda</span></div>
+        <div class="kpi"><span class="k-label">Modelo líder</span><span class="k-value small" id="kpiModel"></span><span
+            class="k-note" id="kpiModelNote"></span></div>
+        <div class="kpi"><span class="k-label">Ano-modelo líder</span><span class="k-value" id="kpiYear"></span><span
+            class="k-note" id="kpiYearNote"></span></div>
+        <div class="kpi"><span class="k-label">Taxa de entrega</span><span class="k-value"
+            id="kpiDelivered"></span><span class="k-note" id="kpiDeliveredNote"></span></div>
+      </div>
+      <div class="section-head">
+        <h2>Perguntas de negócio</h2>
+      </div>
+      <div class="insights">
+        <article class="card">
+          <div class="card-head">
+            <h3>Modelos líderes por cidade</h3><span class="note" id="citiesNote">top 6 cidades</span>
+          </div>
+          <div class="insight-body" id="insightCities"></div>
+        </article>
+        <article class="card">
+          <div class="card-head">
+            <h3>Ano-modelo mais vendido</h3><select id="periodSelect" class="mini-select"></select>
+          </div>
+          <div class="insight-body" id="insightYear"></div>
+        </article>
+        <article class="card">
+          <div class="card-head">
+            <h3>Popularidade por cidade</h3><select id="cityInsight" class="mini-select"></select>
+          </div>
+          <div class="insight-body" id="insightCity"></div>
+        </article>
+      </div>
+      <div class="section-head">
+        <h2>Análise detalhada</h2>
+      </div>
+      <div class="charts">
+        <div class="card chart-card">
+          <div class="card-head">
+            <h3>Receita por modelo</h3><span class="note">top 10</span>
+          </div>
+          <div class="canvas-wrap"><canvas id="modelChart"></canvas>
+            <div class="tip" id="tip-modelChart"></div>
+          </div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-head">
+            <h3>Receita por trimestre</h3><span class="note" id="quarterNote"></span>
+          </div>
+          <div class="canvas-wrap"><canvas id="quarterChart"></canvas>
+            <div class="tip" id="tip-quarterChart"></div>
+          </div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-head">
+            <h3>Métodos de pagamento</h3><span class="note">participação</span>
+          </div>
+          <div class="canvas-wrap"><canvas id="payChart"></canvas>
+            <div class="tip" id="tip-payChart"></div>
+          </div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-head">
+            <h3>Status de entrega</h3><span class="note">unidades</span>
+          </div>
+          <div class="canvas-wrap"><canvas id="statusChart"></canvas>
+            <div class="tip" id="tip-statusChart"></div>
+          </div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-head">
+            <h3>Vendas por estado</h3><span class="note">top 10 UFs</span>
+          </div>
+          <div class="canvas-wrap"><canvas id="stateChart"></canvas>
+            <div class="tip" id="tip-stateChart"></div>
+          </div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-head">
+            <h3>Ano do modelo</h3><span class="note" id="yearNote">unidades por ano</span>
+          </div>
+          <div class="canvas-wrap"><canvas id="yearChart"></canvas>
+            <div class="tip" id="tip-yearChart"></div>
+          </div>
+        </div>
+      </div>
+      <p class="footnote" id="footNote"></p>
+    </section>
+  </main>
+  <script>
+    const DATA = [{ "sale_id": 6, "SaleDateSanitized": "INVALID", "customer_name": "Michael Adams", "PorscheModelSanitized": "718 Cayman", "ModelYearSanitized": 2022, "SalesPriceSanitized": 79500, "VehicleMileageSanitized": 9800, "PayMethodSanitized": "Credit Card", "CitySanitized": "Boston", "StateSanitized": "MA", "salesperson": "kevin", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 7, "SaleDateSanitized": "2024-03-14", "customer_name": "SOPHIA Miller", "PorscheModelSanitized": "911 Turbo S", "ModelYearSanitized": 2024, "SalesPriceSanitized": 235000, "VehicleMileageSanitized": 1200, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Seattle", "StateSanitized": "WA", "salesperson": "AMANDA scott", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 8, "SaleDateSanitized": "2024-04-18", "customer_name": "Daniel-Jones", "PorscheModelSanitized": "Cayenne Coupe", "ModelYearSanitized": 2023, "SalesPriceSanitized": 112750, "VehicleMileageSanitized": 6400, "PayMethodSanitized": "Financing", "CitySanitized": "Austin", "StateSanitized": "TX", "salesperson": "Brian Hall", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 9, "SaleDateSanitized": "INVALID", "customer_name": "Olivia Brown", "PorscheModelSanitized": "Macan S", "ModelYearSanitized": 2021, "SalesPriceSanitized": 68900, "VehicleMileageSanitized": 28, "PayMethodSanitized": "Cash", "CitySanitized": "Denver", "StateSanitized": "CO", "salesperson": "jessica", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 10, "SaleDateSanitized": "2024-05-22", "customer_name": "Ethan Wilson", "PorscheModelSanitized": "Taycan 4S", "ModelYearSanitized": 2024, "SalesPriceSanitized": 121000, "VehicleMileageSanitized": 0, "PayMethodSanitized": "Bank Transfer", "CitySanitized": "Los Angeles", "StateSanitized": "CA", "salesperson": "Thomas King", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 11, "SaleDateSanitized": "2024-08-06", "customer_name": "Ava Martinez", "PorscheModelSanitized": "Panamera 4", "ModelYearSanitized": 2023, "SalesPriceSanitized": 104500, "VehicleMileageSanitized": 14500, "PayMethodSanitized": "Credit Card", "CitySanitized": "Miami", "StateSanitized": "FL", "salesperson": "LISA ray", "DeliveryStatusSanitized": "Cancelled" }, { "sale_id": 12, "SaleDateSanitized": "2024-07-11", "customer_name": "Noah Davis", "PorscheModelSanitized": "911 Carrera S", "ModelYearSanitized": 2020, "SalesPriceSanitized": 96300, "VehicleMileageSanitized": 41000, "PayMethodSanitized": "Lease", "CitySanitized": "New York", "StateSanitized": "NY", "salesperson": "Mark Evans", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 13, "SaleDateSanitized": "INVALID", "customer_name": "Isabella Garcia", "PorscheModelSanitized": "Cayenne E-Hybrid", "ModelYearSanitized": 2022, "SalesPriceSanitized": 89750, "VehicleMileageSanitized": 11744, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "San Diego", "StateSanitized": "CA", "salesperson": "nancy reed", "DeliveryStatusSanitized": "Pending Approval" }, { "sale_id": 14, "SaleDateSanitized": "2024-08-19", "customer_name": "Liam Rodriguez", "PorscheModelSanitized": "718 Boxster", "ModelYearSanitized": 2021, "SalesPriceSanitized": 73500, "VehicleMileageSanitized": 22300, "PayMethodSanitized": "Debit Card", "CitySanitized": "Chicago", "StateSanitized": "IL", "salesperson": "George Bell", "DeliveryStatusSanitized": "Shipped" }, { "sale_id": 15, "SaleDateSanitized": "2024-09-02", "customer_name": "Mia Hernandez", "PorscheModelSanitized": "Macan GTS", "ModelYearSanitized": 2024, "SalesPriceSanitized": 95000, "VehicleMileageSanitized": 3500, "PayMethodSanitized": "Financing", "CitySanitized": "Phoenix", "StateSanitized": "AZ", "salesperson": "Helen Brooks", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 16, "SaleDateSanitized": "2024-09-17", "customer_name": "James Lopez", "PorscheModelSanitized": "Taycan Turbo", "ModelYearSanitized": 2023, "SalesPriceSanitized": 153200.5, "VehicleMileageSanitized": 11, "PayMethodSanitized": "ACH Payment", "CitySanitized": "Dallas", "StateSanitized": "TX", "salesperson": "samuel price", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 17, "SaleDateSanitized": "INVALID", "customer_name": "Charlotte Young", "PorscheModelSanitized": "911 GT3", "ModelYearSanitized": 2024, "SalesPriceSanitized": 241000, "VehicleMileageSanitized": 750, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Las Vegas", "StateSanitized": "NV", "salesperson": "PETER Ford", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 18, "SaleDateSanitized": "2024-05-11", "customer_name": "Benjamin Allen", "PorscheModelSanitized": "Panamera Turbo S", "ModelYearSanitized": 2022, "SalesPriceSanitized": 132000, "VehicleMileageSanitized": 19250, "PayMethodSanitized": "Cash", "CitySanitized": "San Jose", "StateSanitized": "CA", "salesperson": "Angela Green", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 19, "SaleDateSanitized": "2024-12-12", "customer_name": "Amelia King", "PorscheModelSanitized": "Cayenne Turbo GT", "ModelYearSanitized": 2024, "SalesPriceSanitized": 188000, "VehicleMileageSanitized": 2100, "PayMethodSanitized": "Crypto Payment", "CitySanitized": "Houston", "StateSanitized": "TX", "salesperson": "Victor Stone", "DeliveryStatusSanitized": "Awaiting Delivery" }, { "sale_id": 20, "SaleDateSanitized": "2024-12-25", "customer_name": "Lucas Wright", "PorscheModelSanitized": "911 Carrera Cabriolet", "ModelYearSanitized": 2023, "SalesPriceSanitized": 127800, "VehicleMileageSanitized": 12000, "PayMethodSanitized": "Credit Card", "CitySanitized": "Atlanta", "StateSanitized": "GA", "salesperson": "rachel turner", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 21, "SaleDateSanitized": "2025-01-06", "customer_name": "Harper Scott", "PorscheModelSanitized": "Macan", "ModelYearSanitized": 2021, "SalesPriceSanitized": 58900, "VehicleMileageSanitized": 33700, "PayMethodSanitized": "Bank Transfer", "CitySanitized": "Orlando", "StateSanitized": "FL", "salesperson": "Chris Moore", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 22, "SaleDateSanitized": "INVALID", "customer_name": "Henry Torres", "PorscheModelSanitized": "718 Spyder RS", "ModelYearSanitized": 2024, "SalesPriceSanitized": 164000, "VehicleMileageSanitized": 900, "PayMethodSanitized": "Financing", "CitySanitized": "Portland", "StateSanitized": "OR", "salesperson": "LAURA Hill", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 23, "SaleDateSanitized": "2025-02-14", "customer_name": "Evelyn Nguyen", "PorscheModelSanitized": "Taycan Cross Turismo", "ModelYearSanitized": 2023, "SalesPriceSanitized": 118500, "VehicleMileageSanitized": 7800, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Charlotte", "StateSanitized": "NC", "salesperson": "Martin Young", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 24, "SaleDateSanitized": "INVALID", "customer_name": "Alexander Flores", "PorscheModelSanitized": "Cayenne S", "ModelYearSanitized": 2022, "SalesPriceSanitized": 91300, "VehicleMileageSanitized": 16000, "PayMethodSanitized": "Credit Card", "CitySanitized": "Nashville", "StateSanitized": "TN", "salesperson": "Diana Cooper", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 25, "SaleDateSanitized": "2025-03-21", "customer_name": "Abigail Carter", "PorscheModelSanitized": "911 Targa 4S", "ModelYearSanitized": 2024, "SalesPriceSanitized": 158750, "VehicleMileageSanitized": 2500, "PayMethodSanitized": "Lease", "CitySanitized": "Minneapolis", "StateSanitized": "MN", "salesperson": "Steve Gray", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 26, "SaleDateSanitized": "2025-03-28", "customer_name": "Jack Mitchell", "PorscheModelSanitized": "Panamera", "ModelYearSanitized": 2020, "SalesPriceSanitized": 72000, "VehicleMileageSanitized": 49000, "PayMethodSanitized": "Bank Transfer", "CitySanitized": "Philadelphia", "StateSanitized": "PA", "salesperson": "Olivia Ross", "DeliveryStatusSanitized": "Cancelled" }, { "sale_id": 27, "SaleDateSanitized": "2025-04-09", "customer_name": "Emily Perez", "PorscheModelSanitized": "Macan Electric", "ModelYearSanitized": 2025, "SalesPriceSanitized": 86500, "VehicleMileageSanitized": 0, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "San Antonio", "StateSanitized": "TX", "salesperson": "Patrick Wood", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 28, "SaleDateSanitized": "INVALID", "customer_name": "William Roberts", "PorscheModelSanitized": "911 Dakar", "ModelYearSanitized": 2024, "SalesPriceSanitized": 270000, "VehicleMileageSanitized": 1050, "PayMethodSanitized": "Cash", "CitySanitized": "Salt Lake City", "StateSanitized": "UT", "salesperson": "Karen Diaz", "DeliveryStatusSanitized": "Awaiting Pickup" }, { "sale_id": 29, "SaleDateSanitized": "2025-05-12", "customer_name": "Sofia Turner", "PorscheModelSanitized": "Taycan GTS", "ModelYearSanitized": 2023, "SalesPriceSanitized": 139000, "VehicleMileageSanitized": 6250, "PayMethodSanitized": "Financing", "CitySanitized": "Raleigh", "StateSanitized": "NC", "salesperson": "Justin Cox", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 30, "SaleDateSanitized": "2025-06-18", "customer_name": "Mason Phillips", "PorscheModelSanitized": "Cayenne", "ModelYearSanitized": 2021, "SalesPriceSanitized": 76800, "VehicleMileageSanitized": 38400, "PayMethodSanitized": "Credit Card", "CitySanitized": "Detroit", "StateSanitized": "MI", "salesperson": "Betty Ward", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 31, "SaleDateSanitized": "INVALID", "customer_name": "Ella Campbell", "PorscheModelSanitized": "718 Cayman GT4 RS", "ModelYearSanitized": 2024, "SalesPriceSanitized": 173600, "VehicleMileageSanitized": 400, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Columbus", "StateSanitized": "OH", "salesperson": "Gary Reed", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 32, "SaleDateSanitized": "2025-07-07", "customer_name": "Logan Parker", "PorscheModelSanitized": "911 Carrera GTS", "ModelYearSanitized": 2022, "SalesPriceSanitized": 119900, "VehicleMileageSanitized": 13600, "PayMethodSanitized": "Cash", "CitySanitized": "Indianapolis", "StateSanitized": "IN", "salesperson": "maria foster", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 33, "SaleDateSanitized": "2025-07-22", "customer_name": "Grace Evans", "PorscheModelSanitized": "Panamera 4 E-Hybrid", "ModelYearSanitized": 2023, "SalesPriceSanitized": 109250, "VehicleMileageSanitized": 8900, "PayMethodSanitized": "Lease", "CitySanitized": "Fort Worth", "StateSanitized": "TX", "salesperson": "Harold Bennett", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 34, "SaleDateSanitized": "2025-08-14", "customer_name": "Jacob Edwards", "PorscheModelSanitized": "Macan T", "ModelYearSanitized": 2022, "SalesPriceSanitized": 82000, "VehicleMileageSanitized": 21750, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Jacksonville", "StateSanitized": "FL", "salesperson": "Teresa Cook", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 35, "SaleDateSanitized": "2025-09-01", "customer_name": "Victoria Collins", "PorscheModelSanitized": "Taycan Turbo S", "ModelYearSanitized": 2025, "SalesPriceSanitized": 214000, "VehicleMileageSanitized": 0, "PayMethodSanitized": "Crypto Payment", "CitySanitized": "San Diego", "StateSanitized": "CA", "salesperson": "Frank Morgan", "DeliveryStatusSanitized": "Pending Review" }, { "sale_id": 36, "SaleDateSanitized": "INVALID", "customer_name": "Andrew Simmons", "PorscheModelSanitized": "911 Carrera", "ModelYearSanitized": 2024, "SalesPriceSanitized": 124500, "VehicleMileageSanitized": 4800, "PayMethodSanitized": "Credit Card", "CitySanitized": "Tampa", "StateSanitized": "FL", "salesperson": "natalie", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 37, "SaleDateSanitized": "2025-09-18", "customer_name": "Chloe Bennett", "PorscheModelSanitized": "Cayenne S", "ModelYearSanitized": 2023, "SalesPriceSanitized": 98200, "VehicleMileageSanitized": 12200, "PayMethodSanitized": "Bank Transfer", "CitySanitized": "Sacramento", "StateSanitized": "CA", "salesperson": "ERIC woods", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 38, "SaleDateSanitized": "2025-10-04", "customer_name": "Ryan-Cooper", "PorscheModelSanitized": "Macan", "ModelYearSanitized": 2022, "SalesPriceSanitized": 67500, "VehicleMileageSanitized": 24100, "PayMethodSanitized": "Financing", "CitySanitized": "Cleveland", "StateSanitized": "OH", "salesperson": "Patricia Fox", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 39, "SaleDateSanitized": "2025-10-12", "customer_name": "Hannah Reed", "PorscheModelSanitized": "Taycan", "ModelYearSanitized": 2025, "SalesPriceSanitized": 116900, "VehicleMileageSanitized": 0, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Milwaukee", "StateSanitized": "WI", "salesperson": "alan price", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 40, "SaleDateSanitized": "2025-10-29", "customer_name": "Dylan Parker", "PorscheModelSanitized": "Panamera 4S", "ModelYearSanitized": 2024, "SalesPriceSanitized": 112000, "VehicleMileageSanitized": 10, "PayMethodSanitized": "Cash", "CitySanitized": "Kansas City", "StateSanitized": "MO", "salesperson": "Sandra Hill", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 41, "SaleDateSanitized": "2025-02-11", "customer_name": "Lily Coleman", "PorscheModelSanitized": "718 Boxster", "ModelYearSanitized": 2021, "SalesPriceSanitized": 74000, "VehicleMileageSanitized": 31000, "PayMethodSanitized": "Debit Card", "CitySanitized": "Omaha", "StateSanitized": "NE", "salesperson": "Victor Lee", "DeliveryStatusSanitized": "Cancelled" }, { "sale_id": 42, "SaleDateSanitized": "2025-11-16", "customer_name": "Nathan Hughes", "PorscheModelSanitized": "911 Turbo", "ModelYearSanitized": 2024, "SalesPriceSanitized": 198300, "VehicleMileageSanitized": 2400, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Albuquerque", "StateSanitized": "NM", "salesperson": "monica", "DeliveryStatusSanitized": "Awaiting Delivery" }, { "sale_id": 43, "SaleDateSanitized": "INVALID", "customer_name": "Zoe Foster", "PorscheModelSanitized": "Cayenne Coupe", "ModelYearSanitized": 2023, "SalesPriceSanitized": 103750, "VehicleMileageSanitized": 6773, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Tucson", "StateSanitized": "AZ", "salesperson": "Gregory Adams", "DeliveryStatusSanitized": "Pending Approval" }, { "sale_id": 44, "SaleDateSanitized": "INVALID", "customer_name": "Caleb Ward", "PorscheModelSanitized": "Macan GTS", "ModelYearSanitized": 2024, "SalesPriceSanitized": 93600, "VehicleMileageSanitized": 5800, "PayMethodSanitized": "Financing", "CitySanitized": "Fresno", "StateSanitized": "CA", "salesperson": "Laura West", "DeliveryStatusSanitized": "Shipped" }, { "sale_id": 45, "SaleDateSanitized": "2025-12-07", "customer_name": "Stella Brooks", "PorscheModelSanitized": "Taycan 4S", "ModelYearSanitized": 2025, "SalesPriceSanitized": 129000, "VehicleMileageSanitized": 0, "PayMethodSanitized": "ACH Payment", "CitySanitized": "Virginia Beach", "StateSanitized": "VA", "salesperson": "Henry King", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 46, "SaleDateSanitized": "2025-12-22", "customer_name": "Owen Bryant", "PorscheModelSanitized": "Panamera Turbo", "ModelYearSanitized": 2022, "SalesPriceSanitized": 136000, "VehicleMileageSanitized": 18400, "PayMethodSanitized": "Credit Card", "CitySanitized": "Colorado Springs", "StateSanitized": "CO", "salesperson": "amber clark", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 47, "SaleDateSanitized": "INVALID", "customer_name": "Nora Simmons", "PorscheModelSanitized": "911 GT3 RS", "ModelYearSanitized": 2024, "SalesPriceSanitized": 286500, "VehicleMileageSanitized": 700, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Arlington", "StateSanitized": "TX", "salesperson": "PETER Lane", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 48, "SaleDateSanitized": "2026-01-08", "customer_name": "Isaac Butler", "PorscheModelSanitized": "Cayenne E-Hybrid", "ModelYearSanitized": 2023, "SalesPriceSanitized": 92800, "VehicleMileageSanitized": 15000, "PayMethodSanitized": "Lease", "CitySanitized": "Bakersfield", "StateSanitized": "CA", "salesperson": "Grace Morris", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 49, "SaleDateSanitized": "2026-01-15", "customer_name": "Leah Henderson", "PorscheModelSanitized": "Macan T", "ModelYearSanitized": 2022, "SalesPriceSanitized": 72400, "VehicleMileageSanitized": 19750, "PayMethodSanitized": "Cash", "CitySanitized": "Mesa", "StateSanitized": "AZ", "salesperson": "Kyle Perry", "DeliveryStatusSanitized": "Awaiting Pickup" }, { "sale_id": 50, "SaleDateSanitized": "2026-01-28", "customer_name": "Christian Bailey", "PorscheModelSanitized": "Taycan Turbo", "ModelYearSanitized": 2025, "SalesPriceSanitized": 158500, "VehicleMileageSanitized": 3200, "PayMethodSanitized": "Crypto Payment", "CitySanitized": "Atlanta", "StateSanitized": "GA", "salesperson": "megan reed", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 51, "SaleDateSanitized": "2026-02-03", "customer_name": "Audrey Russell", "PorscheModelSanitized": "718 Cayman", "ModelYearSanitized": 2021, "SalesPriceSanitized": 69900, "VehicleMileageSanitized": 27600, "PayMethodSanitized": "Bank Transfer", "CitySanitized": "Long Beach", "StateSanitized": "CA", "salesperson": "Carl Simmons", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 52, "SaleDateSanitized": "INVALID", "customer_name": "Hunter Griffin", "PorscheModelSanitized": "911 Targa 4", "ModelYearSanitized": 2024, "SalesPriceSanitized": 141250, "VehicleMileageSanitized": 2100, "PayMethodSanitized": "Financing", "CitySanitized": "Oakland", "StateSanitized": "CA", "salesperson": "LINDA cole", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 53, "SaleDateSanitized": "2026-02-19", "customer_name": "Scarlett Diaz", "PorscheModelSanitized": "Panamera", "ModelYearSanitized": 2020, "SalesPriceSanitized": 71500, "VehicleMileageSanitized": 52000, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Tulsa", "StateSanitized": "OK", "salesperson": "Martin Brooks", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 54, "SaleDateSanitized": "2026-02-25", "customer_name": "Eli Jenkins", "PorscheModelSanitized": "Cayenne Turbo", "ModelYearSanitized": 2023, "SalesPriceSanitized": 146800, "VehicleMileageSanitized": 11300, "PayMethodSanitized": "Credit Card", "CitySanitized": "Wichita", "StateSanitized": "KS", "salesperson": "Diana Long", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 55, "SaleDateSanitized": "2026-03-01", "customer_name": "Madison Powell", "PorscheModelSanitized": "Macan Electric", "ModelYearSanitized": 2025, "SalesPriceSanitized": 89700, "VehicleMileageSanitized": 0, "PayMethodSanitized": "Lease", "CitySanitized": "New Orleans", "StateSanitized": "LA", "salesperson": "Steve Ross", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 56, "SaleDateSanitized": "2026-03-14", "customer_name": "Adrian Sanders", "PorscheModelSanitized": "911 Carrera S", "ModelYearSanitized": 2022, "SalesPriceSanitized": 104600, "VehicleMileageSanitized": 15900, "PayMethodSanitized": "Bank Transfer", "CitySanitized": "Honolulu", "StateSanitized": "HI", "salesperson": "Olivia Cruz", "DeliveryStatusSanitized": "Cancelled" }, { "sale_id": 57, "SaleDateSanitized": "INVALID", "customer_name": "Penelope Barnes", "PorscheModelSanitized": "Taycan GTS", "ModelYearSanitized": 2024, "SalesPriceSanitized": 142000, "VehicleMileageSanitized": 6600, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Anaheim", "StateSanitized": "CA", "salesperson": "Patrick Wood", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 58, "SaleDateSanitized": "2026-04-08", "customer_name": "Nolan Fisher", "PorscheModelSanitized": "Cayenne", "ModelYearSanitized": 2021, "SalesPriceSanitized": 78400, "VehicleMileageSanitized": 40250, "PayMethodSanitized": "Cash", "CitySanitized": "Henderson", "StateSanitized": "NV", "salesperson": "Karen Stone", "DeliveryStatusSanitized": "Awaiting Review" }, { "sale_id": 59, "SaleDateSanitized": "INVALID", "customer_name": "Layla Marshall", "PorscheModelSanitized": "718 Spyder RS", "ModelYearSanitized": 2025, "SalesPriceSanitized": 169000, "VehicleMileageSanitized": 850, "PayMethodSanitized": "Financing", "CitySanitized": "Lexington", "StateSanitized": "KY", "salesperson": "justin fox", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 60, "SaleDateSanitized": "2026-04-21", "customer_name": "Gabriel Owens", "PorscheModelSanitized": "911 Dakar", "ModelYearSanitized": 2024, "SalesPriceSanitized": 268900, "VehicleMileageSanitized": 1400, "PayMethodSanitized": "Credit Card", "CitySanitized": "Riverside", "StateSanitized": "CA", "salesperson": "Betty James", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 61, "SaleDateSanitized": "2026-04-29", "customer_name": "Victoria Hart", "PorscheModelSanitized": "Panamera 4", "ModelYearSanitized": 2023, "SalesPriceSanitized": 101300, "VehicleMileageSanitized": 12700, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Corpus Christi", "StateSanitized": "TX", "salesperson": "Gary Price", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 62, "SaleDateSanitized": "2026-05-05", "customer_name": "Julian Stone", "PorscheModelSanitized": "Macan S", "ModelYearSanitized": 2021, "SalesPriceSanitized": 66750, "VehicleMileageSanitized": 29800, "PayMethodSanitized": "Cash", "CitySanitized": "St. Louis", "StateSanitized": "MO", "salesperson": "maria green", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 63, "SaleDateSanitized": "2026-05-14", "customer_name": "Brooklyn Webb", "PorscheModelSanitized": "Taycan Cross Turismo", "ModelYearSanitized": 2024, "SalesPriceSanitized": 127900, "VehicleMileageSanitized": 7500, "PayMethodSanitized": "Lease", "CitySanitized": "Pittsburgh", "StateSanitized": "PA", "salesperson": "Harold Young", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 64, "SaleDateSanitized": "2026-05-23", "customer_name": "Aaron Kim", "PorscheModelSanitized": "Cayenne Turbo GT", "ModelYearSanitized": 2025, "SalesPriceSanitized": 200000, "VehicleMileageSanitized": 1950, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Cincinnati", "StateSanitized": "OH", "salesperson": "Teresa Ward", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 65, "SaleDateSanitized": "2026-06-02", "customer_name": "Claire Watson", "PorscheModelSanitized": "911 Carrera Cabriolet", "ModelYearSanitized": 2023, "SalesPriceSanitized": 132000, "VehicleMileageSanitized": 8800, "PayMethodSanitized": "Crypto Payment", "CitySanitized": "Anchorage", "StateSanitized": "AK", "salesperson": "Frank Reed", "DeliveryStatusSanitized": "Pending Review" }, { "sale_id": 66, "SaleDateSanitized": "2026-06-15", "customer_name": "Sebastian Brooks", "PorscheModelSanitized": "718 Cayman GT4 RS", "ModelYearSanitized": 2024, "SalesPriceSanitized": 176400, "VehicleMileageSanitized": 600, "PayMethodSanitized": "Credit Card", "CitySanitized": "Plano", "StateSanitized": "TX", "salesperson": "Angela Moore", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 67, "SaleDateSanitized": "INVALID", "customer_name": "Bella Ramirez", "PorscheModelSanitized": "Panamera 4 E-Hybrid", "ModelYearSanitized": 2022, "SalesPriceSanitized": 108500, "VehicleMileageSanitized": 16200, "PayMethodSanitized": "Bank Transfer", "CitySanitized": "Newark", "StateSanitized": "NJ", "salesperson": "rachel west", "DeliveryStatusSanitized": "Cancelled" }, { "sale_id": 68, "SaleDateSanitized": "2026-07-07", "customer_name": "Miles Peterson", "PorscheModelSanitized": "Macan", "ModelYearSanitized": 2021, "SalesPriceSanitized": 59000, "VehicleMileageSanitized": 36000, "PayMethodSanitized": "Financing", "CitySanitized": "Greensboro", "StateSanitized": "NC", "salesperson": "Thomas Fox", "DeliveryStatusSanitized": "Awaiting Delivery" }, { "sale_id": 69, "SaleDateSanitized": "2026-07-20", "customer_name": "Skylar Rogers", "PorscheModelSanitized": "Taycan Turbo S", "ModelYearSanitized": 2025, "SalesPriceSanitized": 218000, "VehicleMileageSanitized": 0, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Lincoln", "StateSanitized": "NE", "salesperson": "LISA Dunn", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 70, "SaleDateSanitized": "INVALID", "customer_name": "Dominic Kelly", "PorscheModelSanitized": "Cayenne S", "ModelYearSanitized": 2024, "SalesPriceSanitized": 99950, "VehicleMileageSanitized": 5300, "PayMethodSanitized": "Debit Card", "CitySanitized": "Jersey City", "StateSanitized": "NJ", "salesperson": "Brian Allen", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 71, "SaleDateSanitized": "2026-04-08", "customer_name": "Lucy Howard", "PorscheModelSanitized": "911 Carrera GTS", "ModelYearSanitized": 2024, "SalesPriceSanitized": 121750, "VehicleMileageSanitized": 5872, "PayMethodSanitized": "Credit Card", "CitySanitized": "Chandler", "StateSanitized": "AZ", "salesperson": "George Hall", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 72, "SaleDateSanitized": "2026-08-18", "customer_name": "Everett Cox", "PorscheModelSanitized": "718 Boxster GTS", "ModelYearSanitized": 2023, "SalesPriceSanitized": 91500, "VehicleMileageSanitized": 13300, "PayMethodSanitized": "Lease", "CitySanitized": "Reno", "StateSanitized": "NV", "salesperson": "Helen King", "DeliveryStatusSanitized": "Shipped" }, { "sale_id": 73, "SaleDateSanitized": "2026-08-31", "customer_name": "Maya Rivera", "PorscheModelSanitized": "Panamera Turbo S", "ModelYearSanitized": 2022, "SalesPriceSanitized": 134000, "VehicleMileageSanitized": 20100, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Buffalo", "StateSanitized": "NY", "salesperson": "samuel price", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 74, "SaleDateSanitized": "2026-09-09", "customer_name": "Connor Ward", "PorscheModelSanitized": "Macan GTS", "ModelYearSanitized": 2024, "SalesPriceSanitized": 96800, "VehicleMileageSanitized": 0, "PayMethodSanitized": "ACH Payment", "CitySanitized": "Durham", "StateSanitized": "NC", "salesperson": "Peter Ford", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 75, "SaleDateSanitized": "2026-09-17", "customer_name": "Eliana Bell", "PorscheModelSanitized": "Taycan 4S", "ModelYearSanitized": 2025, "SalesPriceSanitized": 131600, "VehicleMileageSanitized": 2900, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Laredo", "StateSanitized": "TX", "salesperson": "Angela Green", "DeliveryStatusSanitized": "Pending Approval" }, { "sale_id": 76, "SaleDateSanitized": "2026-09-28", "customer_name": "Cameron Murphy", "PorscheModelSanitized": "Cayenne E-Hybrid", "ModelYearSanitized": 2023, "SalesPriceSanitized": 94300, "VehicleMileageSanitized": 13100, "PayMethodSanitized": "Cash", "CitySanitized": "Madison", "StateSanitized": "WI", "salesperson": "Victor Stone", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 77, "SaleDateSanitized": "2026-10-06", "customer_name": "Ariana Cook", "PorscheModelSanitized": "911 Turbo S", "ModelYearSanitized": 2025, "SalesPriceSanitized": 242000, "VehicleMileageSanitized": 1100, "PayMethodSanitized": "Crypto Payment", "CitySanitized": "Lubbock", "StateSanitized": "TX", "salesperson": "Rachel Turner", "DeliveryStatusSanitized": "Awaiting Pickup" }, { "sale_id": 78, "SaleDateSanitized": "2026-10-16", "customer_name": "Wesley Morgan", "PorscheModelSanitized": "718 Cayman S", "ModelYearSanitized": 2022, "SalesPriceSanitized": 82750, "VehicleMileageSanitized": 22500, "PayMethodSanitized": "Credit Card", "CitySanitized": "Toledo", "StateSanitized": "OH", "salesperson": "Chris Moore", "DeliveryStatusSanitized": "Cancelled" }, { "sale_id": 79, "SaleDateSanitized": "2026-10-29", "customer_name": "Naomi Peterson", "PorscheModelSanitized": "Macan Electric", "ModelYearSanitized": 2026, "SalesPriceSanitized": 91300, "VehicleMileageSanitized": 0, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Irvine", "StateSanitized": "CA", "salesperson": "LAURA Hill", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 80, "SaleDateSanitized": "2026-11-03", "customer_name": "Jason Perry", "PorscheModelSanitized": "Panamera", "ModelYearSanitized": 2021, "SalesPriceSanitized": 79900, "VehicleMileageSanitized": 44800, "PayMethodSanitized": "Financing", "CitySanitized": "Garland", "StateSanitized": "TX", "salesperson": "Martin Young", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 81, "SaleDateSanitized": "INVALID", "customer_name": "Riley Flores", "PorscheModelSanitized": "Cayenne Coupe", "ModelYearSanitized": 2024, "SalesPriceSanitized": 111000, "VehicleMileageSanitized": 6700, "PayMethodSanitized": "Bank Transfer", "CitySanitized": "Irving", "StateSanitized": "TX", "salesperson": "Diana Cooper", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 82, "SaleDateSanitized": "2026-12-11", "customer_name": "Hazel Long", "PorscheModelSanitized": "911 Targa 4S", "ModelYearSanitized": 2023, "SalesPriceSanitized": 156500, "VehicleMileageSanitized": 4200, "PayMethodSanitized": "Cash", "CitySanitized": "Chesapeake", "StateSanitized": "VA", "salesperson": "Steve Gray", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 83, "SaleDateSanitized": "2026-12-24", "customer_name": "Easton Bailey", "PorscheModelSanitized": "Taycan", "ModelYearSanitized": 2025, "SalesPriceSanitized": 119900, "VehicleMileageSanitized": 1250, "PayMethodSanitized": "Lease", "CitySanitized": "Scottsdale", "StateSanitized": "AZ", "salesperson": "Olivia Ross", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 84, "SaleDateSanitized": "INVALID", "customer_name": "Aurora Cooper", "PorscheModelSanitized": "Macan T", "ModelYearSanitized": 2022, "SalesPriceSanitized": 73200, "VehicleMileageSanitized": 18600, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Norfolk", "StateSanitized": "VA", "salesperson": "Patrick Wood", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 85, "SaleDateSanitized": "2026-12-28", "customer_name": "Colton Richardson", "PorscheModelSanitized": "911 GT3", "ModelYearSanitized": 2024, "SalesPriceSanitized": 224000, "VehicleMileageSanitized": 3000, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Boise", "StateSanitized": "ID", "salesperson": "Karen Diaz", "DeliveryStatusSanitized": "Awaiting Delivery" }, { "sale_id": 86, "SaleDateSanitized": "2027-01-15", "customer_name": "Mason Stewart", "PorscheModelSanitized": "911 Carrera", "ModelYearSanitized": 2024, "SalesPriceSanitized": 126900, "VehicleMileageSanitized": 7200, "PayMethodSanitized": "Credit Card", "CitySanitized": "Orlando", "StateSanitized": "FL", "salesperson": "kevin brown", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 87, "SaleDateSanitized": "2027-01-29", "customer_name": "Harper Reed", "PorscheModelSanitized": "Cayenne", "ModelYearSanitized": 2023, "SalesPriceSanitized": 84500, "VehicleMileageSanitized": 21400, "PayMethodSanitized": "Bank Transfer", "CitySanitized": "San Jose", "StateSanitized": "CA", "salesperson": "AMANDA Lee", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 88, "SaleDateSanitized": "2027-02-11", "customer_name": "Tyler-Morris", "PorscheModelSanitized": "Macan S", "ModelYearSanitized": 2022, "SalesPriceSanitized": 69800, "VehicleMileageSanitized": 26300, "PayMethodSanitized": "Financing", "CitySanitized": "Tampa", "StateSanitized": "FL", "salesperson": "Brian Hall", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 89, "SaleDateSanitized": "INVALID", "customer_name": "Natalie Brooks", "PorscheModelSanitized": "Taycan 4S", "ModelYearSanitized": 2025, "SalesPriceSanitized": 132700, "VehicleMileageSanitized": 0, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Denver", "StateSanitized": "CO", "salesperson": "jessica white", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 90, "SaleDateSanitized": "2027-03-05", "customer_name": "Brandon Parker", "PorscheModelSanitized": "Panamera", "ModelYearSanitized": 2021, "SalesPriceSanitized": 81000, "VehicleMileageSanitized": 42, "PayMethodSanitized": "Cash", "CitySanitized": "Austin", "StateSanitized": "TX", "salesperson": "Thomas King", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 91, "SaleDateSanitized": "2027-03-18", "customer_name": "Lauren Foster", "PorscheModelSanitized": "718 Cayman", "ModelYearSanitized": 2023, "SalesPriceSanitized": 78900, "VehicleMileageSanitized": 17500, "PayMethodSanitized": "Debit Card", "CitySanitized": "Seattle", "StateSanitized": "WA", "salesperson": "Victor Lee", "DeliveryStatusSanitized": "Cancelled" }, { "sale_id": 92, "SaleDateSanitized": "2027-04-02", "customer_name": "Adam Hughes", "PorscheModelSanitized": "911 Turbo S", "ModelYearSanitized": 2026, "SalesPriceSanitized": 249300, "VehicleMileageSanitized": 900, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Boston", "StateSanitized": "MA", "salesperson": "monica green", "DeliveryStatusSanitized": "Awaiting Delivery" }, { "sale_id": 93, "SaleDateSanitized": "INVALID", "customer_name": "Julia Coleman", "PorscheModelSanitized": "Cayenne Coupe", "ModelYearSanitized": 2024, "SalesPriceSanitized": 108750, "VehicleMileageSanitized": 5530, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Phoenix", "StateSanitized": "AZ", "salesperson": "Gregory Adams", "DeliveryStatusSanitized": "Pending Approval" }, { "sale_id": 94, "SaleDateSanitized": "INVALID", "customer_name": "Caleb Simmons", "PorscheModelSanitized": "Macan Electric", "ModelYearSanitized": 2026, "SalesPriceSanitized": 92600, "VehicleMileageSanitized": 0, "PayMethodSanitized": "Financing", "CitySanitized": "Chicago", "StateSanitized": "IL", "salesperson": "Laura West", "DeliveryStatusSanitized": "Shipped" }, { "sale_id": 95, "SaleDateSanitized": "2027-05-12", "customer_name": "Ariana Price", "PorscheModelSanitized": "Taycan Turbo", "ModelYearSanitized": 2025, "SalesPriceSanitized": 164000, "VehicleMileageSanitized": 0, "PayMethodSanitized": "ACH Payment", "CitySanitized": "Dallas", "StateSanitized": "TX", "salesperson": "Henry King", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 96, "SaleDateSanitized": "2027-05-27", "customer_name": "Owen Rivera", "PorscheModelSanitized": "Panamera 4S", "ModelYearSanitized": 2024, "SalesPriceSanitized": 119000, "VehicleMileageSanitized": 13400, "PayMethodSanitized": "Credit Card", "CitySanitized": "San Francisco", "StateSanitized": "CA", "salesperson": "amber clark", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 97, "SaleDateSanitized": "INVALID", "customer_name": "Nora Bennett", "PorscheModelSanitized": "911 GT3", "ModelYearSanitized": 2026, "SalesPriceSanitized": 232500, "VehicleMileageSanitized": 1700, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Las Vegas", "StateSanitized": "NV", "salesperson": "PETER Lane", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 98, "SaleDateSanitized": "2027-06-18", "customer_name": "Isaac Turner", "PorscheModelSanitized": "Cayenne E-Hybrid", "ModelYearSanitized": 2023, "SalesPriceSanitized": 96800, "VehicleMileageSanitized": 14000, "PayMethodSanitized": "Lease", "CitySanitized": "Charlotte", "StateSanitized": "NC", "salesperson": "Grace Morris", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 99, "SaleDateSanitized": "2027-07-03", "customer_name": "Leah Scott", "PorscheModelSanitized": "Macan T", "ModelYearSanitized": 2022, "SalesPriceSanitized": 74400, "VehicleMileageSanitized": 20750, "PayMethodSanitized": "Cash", "CitySanitized": "Mesa", "StateSanitized": "AZ", "salesperson": "Kyle Perry", "DeliveryStatusSanitized": "Awaiting Pickup" }, { "sale_id": 100, "SaleDateSanitized": "2027-07-22", "customer_name": "Christian Bailey", "PorscheModelSanitized": "Taycan GTS", "ModelYearSanitized": 2025, "SalesPriceSanitized": 148500, "VehicleMileageSanitized": 5200, "PayMethodSanitized": "Crypto Payment", "CitySanitized": "Atlanta", "StateSanitized": "GA", "salesperson": "megan reed", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 101, "SaleDateSanitized": "2027-08-08", "customer_name": "Audrey Russell", "PorscheModelSanitized": "718 Boxster", "ModelYearSanitized": 2021, "SalesPriceSanitized": 71900, "VehicleMileageSanitized": 29600, "PayMethodSanitized": "Bank Transfer", "CitySanitized": "Long Beach", "StateSanitized": "CA", "salesperson": "Carl Simmons", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 102, "SaleDateSanitized": "INVALID", "customer_name": "Hunter Griffin", "PorscheModelSanitized": "911 Targa 4", "ModelYearSanitized": 2022, "SalesPriceSanitized": 143250, "VehicleMileageSanitized": 3100, "PayMethodSanitized": "Financing", "CitySanitized": "Oakland", "StateSanitized": "CA", "salesperson": "LINDA cole", "DeliveryStatusSanitized": "In Transit" }, { "sale_id": 103, "SaleDateSanitized": "2027-09-19", "customer_name": "Scarlett Diaz", "PorscheModelSanitized": "Panamera Turbo", "ModelYearSanitized": 2024, "SalesPriceSanitized": 137500, "VehicleMileageSanitized": 48000, "PayMethodSanitized": "Wire Transfer", "CitySanitized": "Tulsa", "StateSanitized": "OK", "salesperson": "Martin Brooks", "DeliveryStatusSanitized": "Delivered" }, { "sale_id": 104, "SaleDateSanitized": "2027-09-25", "customer_name": "Eli Jenkins", "PorscheModelSanitized": "Cayenne Turbo GT", "ModelYearSanitized": 2023, "SalesPriceSanitized": 204800, "VehicleMileageSanitized": 3300, "PayMethodSanitized": "Credit Card", "CitySanitized": "Wichita", "StateSanitized": "KS", "salesperson": "Diana Long", "DeliveryStatusSanitized": "Pending" }, { "sale_id": 105, "SaleDateSanitized": "2027-10-01", "customer_name": "Madison Powell", "PorscheModelSanitized": "911 Dakar", "ModelYearSanitized": 2021, "SalesPriceSanitized": 271700, "VehicleMileageSanitized": 1050, "PayMethodSanitized": "Lease", "CitySanitized": "New Orleans", "StateSanitized": "LA", "salesperson": "Steve Ross", "DeliveryStatusSanitized": "Delivered" }];
+    const PALETTE = ['#d5001c', '#c9a24a', '#7f8ea3', '#4f7f6f', '#a5715c', '#8a7a9e', '#bfc3c9', '#6c8a9e', '#9e5b6b', '#5d6168'];
+    const FONT = '"Segoe UI", Arial, sans-serif';
+    const ACCENT = '#d5001c';
+    const INK = '#d7d9dd';
+    const MUTED = '#8e939b';
+    const GRID = 'rgba(236,238,241,.07)';
+    const AXIS = 'rgba(236,238,241,.16)';
+
+    const STATUS_PT = {
+      'Delivered': 'Entregue',
+      'Pending': 'Pendente',
+      'In Transit': 'Em trânsito',
+      'Cancelled': 'Cancelado',
+      'Awaiting Delivery': 'Aguard. entrega',
+      'Pending Approval': 'Aguard. aprovação',
+      'Shipped': 'Enviado',
+      'Awaiting Pickup': 'Aguard. retirada',
+      'Pending Review': 'Em revisão',
+      'Awaiting Review': 'Aguard. revisão'
+    };
+    const PAY_PT = {
+      'Credit Card': 'Cartão de crédito',
+      'Debit Card': 'Cartão de débito',
+      'Bank Transfer': 'Transf. bancária',
+      'Wire Transfer': 'Transferência wire',
+      'Financing': 'Financiamento',
+      'Lease': 'Leasing',
+      'Cash': 'À vista',
+      'ACH Payment': 'ACH',
+      'Crypto Payment': 'Cripto'
+    };
+    const STATUS_COLORS = {
+      'Delivered': '#5f9e78',
+      'Pending': '#c39a4a',
+      'In Transit': '#5d87bd',
+      'Cancelled': '#c45963',
+      'Awaiting Delivery': '#c07a52',
+      'Pending Approval': '#a8924f',
+      'Shipped': '#5fa39e',
+      'Awaiting Pickup': '#8f7fae',
+      'Pending Review': '#89a860',
+      'Awaiting Review': '#8b9098'
+    };
+    const statusLabel = s => STATUS_PT[s] || s;
+    const payLabel = s => PAY_PT[s] || s;
+
+    const usd0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    const num0 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
+    const fmtUSD = v => usd0.format(v);
+    const fmtNum = v => num0.format(v);
+    const compact = v => {
+      if (v >= 1e6) {
+        const n = v / 1e6;
+        return '$' + (n >= 10 ? n.toFixed(1) : n.toFixed(2)).replace(/\.0$/, '') + 'M';
+      }
+      if (v >= 1e3) return '$' + Math.round(v / 1e3) + 'k';
+      return '$' + Math.round(v);
+    };
+    const tipHTML = (title, body) => '<b>' + title + '</b><span>' + body + '</span>';
+
+    const $ = id => document.getElementById(id);
+    const state = { model: 'all', year: 'all', city: 'all', pay: 'all', period: 'all', q: '' };
+
+    function uniq(arr) { return [...new Set(arr)]; }
+
+    function fillSelect(el, items, firstLabel, firstValue) {
+      firstValue = firstValue === undefined ? 'all' : firstValue;
+      el.innerHTML = '<option value="' + firstValue + '">' + firstLabel + '</option>' +
+        items.map(v => '<option value="' + v.value + '">' + v.label + '</option>').join('');
+    }
+
+    function fillPlain(el, values, firstLabel, firstValue) {
+      fillSelect(el, values.map(v => ({ value: String(v), label: String(v) })), firstLabel, firstValue);
+    }
+
+    const models = uniq(DATA.map(d => d.PorscheModelSanitized)).sort((a, b) => a.localeCompare(b));
+    const years = uniq(DATA.map(d => d.ModelYearSanitized)).filter(v => v !== 'INVALID').sort((a, b) => a - b);
+    const cities = uniq(DATA.map(d => d.CitySanitized)).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    const pays = uniq(DATA.map(d => d.PayMethodSanitized)).filter(v => v !== 'INVALID').sort((a, b) => payLabel(a).localeCompare(payLabel(b), 'pt-BR'));
+    const periodYears = uniq(DATA.filter(d => d.SaleDateSanitized !== 'INVALID').map(d => d.SaleDateSanitized.slice(0, 4))).sort();
+
+    fillPlain($('fModel'), models, 'Todos os modelos');
+    fillPlain($('fYear'), years, 'Todos os anos');
+    fillPlain($('fCity'), cities, 'Todas as cidades');
+    fillSelect($('fPay'), pays.map(p => ({ value: p, label: payLabel(p) })), 'Todos os pagamentos');
+    fillPlain($('periodSelect'), periodYears, 'Todo o período');
+    fillPlain($('cityInsight'), cities, 'Cidade líder (automático)', '__auto__');
+    $('baseCount').textContent = DATA.length;
+
+    $('fModel').addEventListener('change', e => { state.model = e.target.value; renderAll(); });
+    $('fYear').addEventListener('change', e => { state.year = e.target.value; renderAll(); });
+    $('fCity').addEventListener('change', e => { state.city = e.target.value; renderAll(); });
+    $('fPay').addEventListener('change', e => { state.pay = e.target.value; renderAll(); });
+    $('periodSelect').addEventListener('change', e => { state.period = e.target.value; renderAll(); });
+    $('cityInsight').addEventListener('change', e => {
+      state.city = e.target.value === '__auto__' ? 'all' : e.target.value;
+      $('fCity').value = state.city;
+      renderAll();
+    });
+    $('search').addEventListener('input', e => { state.q = e.target.value.trim().toLowerCase(); renderTable(); });
+    $('clearFilters').addEventListener('click', () => {
+      state.model = 'all'; state.year = 'all'; state.city = 'all'; state.pay = 'all'; state.period = 'all'; state.q = '';
+      $('fModel').value = 'all'; $('fYear').value = 'all'; $('fCity').value = 'all'; $('fPay').value = 'all';
+      $('periodSelect').value = 'all';
+      $('search').value = '';
+      renderAll();
+    });
+
+    function dashboardRows() {
+      return DATA.filter(d =>
+        (state.model === 'all' || d.PorscheModelSanitized === state.model) &&
+        (state.year === 'all' || String(d.ModelYearSanitized) === state.year) &&
+        (state.city === 'all' || d.CitySanitized === state.city) &&
+        (state.pay === 'all' || d.PayMethodSanitized === state.pay)
+      );
+    }
+
+    function tableRows() {
+      const rows = dashboardRows();
+      if (!state.q) return rows;
+      return rows.filter(d =>
+        [d.customer_name, d.CitySanitized, d.StateSanitized, d.salesperson, d.PorscheModelSanitized,
+        d.PayMethodSanitized, payLabel(d.PayMethodSanitized), d.DeliveryStatusSanitized, statusLabel(d.DeliveryStatusSanitized), String(d.sale_id)]
+          .join(' ').toLowerCase().includes(state.q)
+      );
+    }
+
+    function aggregateSales(rows, keyFn) {
+      const map = new Map();
+      for (const r of rows) {
+        const k = keyFn(r);
+        if (k == null || k === 'INVALID' || k === '') continue;
+        const o = map.get(k) || { key: k, units: 0, revenue: 0 };
+        o.units++;
+        o.revenue += r.SalesPriceSanitized;
+        map.set(k, o);
+      }
+      return [...map.values()];
+    }
+
+    function sortByUnits(a, b) {
+      return b.units - a.units || b.revenue - a.revenue;
+    }
+
+    function statusClass(s) {
+      if (s === 'Delivered') return 'st-green';
+      if (s === 'In Transit' || s === 'Shipped') return 'st-blue';
+      if (s === 'Cancelled') return 'st-red';
+      if (s.startsWith('Pending') || s.startsWith('Awaiting')) return 'st-amber';
+      return 'st-gray';
+    }
+
+    function renderTable() {
+      const rows = tableRows();
+      const total = dashboardRows().length;
+      $('rowCount').textContent = rows.length + ' de ' + total;
+      $('tbody').innerHTML = rows.map(d => {
+        const invalid = d.SaleDateSanitized === 'INVALID';
+        return '<tr>' +
+          '<td class="num">' + d.sale_id + '</td>' +
+          '<td class="' + (invalid ? 'invalid' : '') + '">' + d.SaleDateSanitized + '</td>' +
+          '<td>' + d.customer_name + '</td>' +
+          '<td>' + d.PorscheModelSanitized + '</td>' +
+          '<td class="num">' + d.ModelYearSanitized + '</td>' +
+          '<td class="num">' + fmtUSD(d.SalesPriceSanitized) + '</td>' +
+          '<td class="num">' + fmtNum(d.VehicleMileageSanitized) + ' mi</td>' +
+          '<td>' + payLabel(d.PayMethodSanitized) + '</td>' +
+          '<td>' + d.CitySanitized + ' · ' + d.StateSanitized + '</td>' +
+          '<td>' + d.salesperson + '</td>' +
+          '<td><span class="chip ' + statusClass(d.DeliveryStatusSanitized) + '">' + statusLabel(d.DeliveryStatusSanitized) + '</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function renderKPIs(rows) {
+      const revenue = rows.reduce((s, d) => s + d.SalesPriceSanitized, 0);
+      const units = rows.length;
+      const avg = units ? revenue / units : 0;
+      const delivered = rows.filter(d => d.DeliveryStatusSanitized === 'Delivered').length;
+      const deliveredPct = units ? Math.round(delivered / units * 100) : 0;
+      const modelAgg = aggregateSales(rows, d => d.PorscheModelSanitized).sort(sortByUnits);
+      const yearAgg = aggregateSales(rows, d => d.ModelYearSanitized).sort(sortByUnits);
+      const topModel = modelAgg[0];
+      const topYear = yearAgg[0];
+
+      $('kpiRevenue').textContent = units ? compact(revenue) : '—';
+      $('kpiRevenueNote').textContent = units ? fmtUSD(revenue) + ' no total' : 'sem dados';
+      $('kpiUnits').textContent = fmtNum(units);
+      $('kpiUnitsNote').textContent = units
+        ? uniq(rows.map(d => d.PorscheModelSanitized)).length + ' modelos · ' + uniq(rows.map(d => d.StateSanitized)).length + ' UFs'
+        : 'sem dados';
+      $('kpiAvg').textContent = units ? compact(avg) : '—';
+      $('kpiModel').textContent = topModel ? topModel.key : '—';
+      $('kpiModel').classList.toggle('small', !!topModel && topModel.key.length > 11);
+      $('kpiModelNote').textContent = topModel
+        ? topModel.units + (topModel.units === 1 ? ' venda' : ' vendas') + ' · ' + Math.round(topModel.units / units * 100) + '% da base'
+        : 'sem dados';
+      $('kpiYear').textContent = topYear ? topYear.key : '—';
+      $('kpiYearNote').textContent = topYear
+        ? topYear.units + ' vendas · ' + Math.round(topYear.units / units * 100) + '% do total'
+        : 'sem dados';
+      $('kpiDelivered').textContent = units ? deliveredPct + '%' : '—';
+      $('kpiDeliveredNote').textContent = units ? delivered + ' de ' + units + ' entregues' : 'sem dados';
+    }
+
+    function emptyBlock(text) {
+      return '<div class="empty">' + (text || 'Sem dados para os filtros selecionados') + '</div>';
+    }
+
+    function renderInsightCities(rows) {
+      $('citiesNote').textContent = state.city === 'all' ? 'top 6 cidades' : 'cidade filtrada';
+      const cityAgg = aggregateSales(rows, d => d.CitySanitized)
+        .sort((a, b) => b.units - a.units || b.revenue - a.revenue)
+        .slice(0, 6);
+      if (!cityAgg.length) {
+        $('insightCities').innerHTML = emptyBlock();
+        return;
+      }
+      $('insightCities').innerHTML = cityAgg.map((c, i) => {
+        const cr = rows.filter(d => d.CitySanitized === c.key);
+        const leader = aggregateSales(cr, d => d.PorscheModelSanitized).sort(sortByUnits)[0];
+        if (!leader) return '';
+        const pct = Math.round(leader.units / c.units * 100);
+        const uf = cr[0] ? cr[0].StateSanitized : '';
+        return '<div class="rank">' +
+          '<span class="rank-idx">' + String(i + 1).padStart(2, '0') + '</span>' +
+          '<div>' +
+          '<div class="rank-head"><span class="rank-city">' + c.key + (uf ? '<em>' + uf + '</em>' : '') + '</span>' +
+          '<span class="rank-units">' + c.units + (c.units === 1 ? ' venda' : ' vendas') + '</span></div>' +
+          '<div class="rank-model">' + leader.key + ' <span>· ' + leader.units + ' de ' + c.units + ' (' + pct + '%)</span></div>' +
+          '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+          '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    function renderInsightYear(rows) {
+      const period = state.period;
+      const invalidRows = rows.filter(d => d.SaleDateSanitized === 'INVALID').length;
+      const scope = period === 'all'
+        ? rows
+        : rows.filter(d => d.SaleDateSanitized !== 'INVALID' && d.SaleDateSanitized.slice(0, 4) === period);
+
+      if (!scope.length) {
+        $('insightYear').innerHTML = emptyBlock('Nenhuma venda com data válida neste período');
+        return;
+      }
+
+      const yearAgg = aggregateSales(scope, d => d.ModelYearSanitized).sort(sortByUnits);
+      const winner = yearAgg[0];
+      if (!winner) {
+        $('insightYear').innerHTML = emptyBlock('Sem ano-modelo válido para os filtros');
+        return;
+      }
+      const maxUnits = winner.units;
+      const pct = Math.round(winner.units / scope.length * 100);
+      const list = yearAgg.slice(0, 4);
+      const foot = period === 'all'
+        ? scope.length + ' vendas na base · ' + invalidRows + ' sem data válida'
+        : scope.length + ' vendas em ' + period + ' · ' + invalidRows + ' registros sem data não atribuídos';
+
+      $('insightYear').innerHTML =
+        '<div class="winner">' +
+        '<div class="winner-year">' + winner.key + '</div>' +
+        '<div class="winner-meta">ano-modelo campeão<br><b>' + winner.units + ' vendas</b> · ' + pct + '% do período</div>' +
+        '</div>' +
+        '<div class="mini-rows">' +
+        list.map(y =>
+          '<div class="mini-row">' +
+          '<span class="mini-label">' + y.key + '</span>' +
+          '<div class="bar"><i style="width:' + Math.round(y.units / maxUnits * 100) + '%"></i></div>' +
+          '<span class="mini-value">' + y.units + '</span>' +
+          '</div>'
+        ).join('') +
+        '</div>' +
+        '<div class="insight-foot">' + foot + '</div>';
+    }
+
+    function renderInsightCity(rows) {
+      const auto = state.city === 'all';
+      const cityAgg = aggregateSales(rows, d => d.CitySanitized)
+        .sort((a, b) => b.units - a.units || b.revenue - a.revenue);
+      $('cityInsight').value = auto ? '__auto__' : state.city;
+
+      if (!cityAgg.length) {
+        $('insightCity').innerHTML = emptyBlock();
+        return;
+      }
+      const cityKey = auto ? cityAgg[0].key : state.city;
+      const cr = rows.filter(d => d.CitySanitized === cityKey);
+      if (!cr.length) {
+        $('insightCity').innerHTML = emptyBlock();
+        return;
+      }
+      const modelAgg = aggregateSales(cr, d => d.PorscheModelSanitized).sort(sortByUnits).slice(0, 3);
+      const units = cr.length;
+      const avgPrice = cr.reduce((s, d) => s + d.SalesPriceSanitized, 0) / units;
+      const avgMileage = cr.reduce((s, d) => s + d.VehicleMileageSanitized, 0) / units;
+      const delivered = cr.filter(d => d.DeliveryStatusSanitized === 'Delivered').length;
+      const uf = cr[0] ? cr[0].StateSanitized : '';
+      const hint = auto
+        ? 'Exibindo a cidade líder em volume. Selecione uma cidade nos filtros para detalhar.'
+        : 'Insight detalhado para a cidade selecionada nos filtros.';
+
+      $('insightCity').innerHTML =
+        '<div class="city-head">' +
+        '<span class="city-name">' + cityKey + (uf ? '<em>' + uf + '</em>' : '') + '</span>' +
+        '<span class="rank-units">' + units + (units === 1 ? ' venda' : ' vendas') + '</span>' +
+        '</div>' +
+        '<div class="m-list">' +
+        modelAgg.map(m => {
+          const pct = Math.round(m.units / units * 100);
+          return '<div class="m-row">' +
+            '<div class="m-head"><span class="m-name">' + m.key + '</span>' +
+            '<span class="m-meta">' + m.units + ' un · ' + pct + '%</span></div>' +
+            '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+            '</div>';
+        }).join('') +
+        '</div>' +
+        '<div class="stats">' +
+        '<div><span>Preço médio</span><b>' + compact(avgPrice) + '</b></div>' +
+        '<div><span>Milhagem</span><b>' + fmtNum(avgMileage) + ' mi</b></div>' +
+        '<div><span>Entregues</span><b>' + Math.round(delivered / units * 100) + '%</b></div>' +
+        '</div>' +
+        '<div class="insight-foot">' + hint + '</div>';
+    }
+
+    function prep(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      canvas.width = Math.max(1, Math.round(w * dpr));
+      canvas.height = Math.max(1, Math.round(h * dpr));
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      ctx.font = '11px ' + FONT;
+      return { ctx, w, h };
+    }
+
+    function truncate(ctx, text, maxW) {
+      if (ctx.measureText(text).width <= maxW) return text;
+      let t = text;
+      while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+      return t + '…';
+    }
+
+    function bindTip(canvas) {
+      const tip = $('tip-' + canvas.id);
+      canvas.addEventListener('mousemove', e => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left, y = e.clientY - rect.top;
+        const hit = (canvas._hits || []).find(h => h.test(x, y));
+        if (hit) {
+          tip.innerHTML = hit.html;
+          tip.style.opacity = 1;
+          const tw = tip.offsetWidth, th = tip.offsetHeight;
+          let left = x + 15, top = y - th - 12;
+          if (left + tw > rect.width - 6) left = x - tw - 15;
+          if (top < 4) top = y + 18;
+          if (left < 4) left = 4;
+          tip.style.left = left + 'px';
+          tip.style.top = top + 'px';
+        } else {
+          tip.style.opacity = 0;
+        }
+      });
+      canvas.addEventListener('mouseleave', () => { tip.style.opacity = 0; });
+    }
+
+    function emptyMsg(ctx, w, h) {
+      ctx.fillStyle = '#7f838a';
+      ctx.textAlign = 'center';
+      ctx.font = '11px ' + FONT;
+      ctx.fillText('Sem dados para os filtros selecionados', w / 2, h / 2);
+    }
+
+    function niceMax(v) {
+      if (v <= 0) return 1;
+      const p = Math.pow(10, Math.floor(Math.log10(v)));
+      const n = v / p;
+      const step = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
+      return step * p;
+    }
+
+    function drawBarH(canvas, entries, options) {
+      const { ctx, w, h } = prep(canvas);
+      canvas._hits = [];
+      if (!entries.length) { emptyMsg(ctx, w, h); return; }
+      const colorFn = options.colorFn;
+      const valueFmt = options.valueFmt;
+      const axisFmt = options.axisFmt || (v => compact(v));
+      const padL = Math.min(128, w * 0.30), padR = 66, padT = 8, padB = 22;
+      const max = Math.max(...entries.map(e => e.value));
+      const n = entries.length;
+      const rowH = (h - padT - padB) / n;
+      const barH = Math.min(16, rowH * 0.52);
+      const plotW = w - padL - padR;
+
+      ctx.font = '9.5px ' + FONT;
+      ctx.textAlign = 'left';
+      for (let i = 0; i <= 3; i++) {
+        const x = padL + plotW * i / 3;
+        ctx.strokeStyle = i === 0 ? AXIS : GRID;
+        ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, h - padB); ctx.stroke();
+        ctx.fillStyle = '#7f838a';
+        ctx.fillText(axisFmt(max * i / 3), x + 2, h - 8);
+      }
+
+      entries.forEach((e, i) => {
+        const y = padT + i * rowH + rowH / 2;
+        const bw = Math.max(2, plotW * (e.value / max));
+        ctx.fillStyle = '#d6d8dc';
+        ctx.textAlign = 'right';
+        ctx.font = '10.5px ' + FONT;
+        ctx.fillText(truncate(ctx, e.label, padL - 14), padL - 9, y + 3.5);
+        ctx.fillStyle = colorFn(e, i);
+        ctx.beginPath();
+        ctx.roundRect(padL, y - barH / 2, bw, barH, 2);
+        ctx.fill();
+        ctx.fillStyle = '#9a9da3';
+        ctx.textAlign = 'left';
+        ctx.font = '9.5px ' + FONT;
+        ctx.fillText(valueFmt(e), padL + bw + 7, y + 3.5);
+        canvas._hits.push({
+          test: (mx, my) => mx >= padL && mx <= padL + plotW && my >= y - rowH / 2 && my < y + rowH / 2,
+          html: e.tip
+        });
+      });
+    }
+
+    function drawLine(canvas, entries) {
+      const { ctx, w, h } = prep(canvas);
+      canvas._hits = [];
+      if (!entries.length) { emptyMsg(ctx, w, h); return; }
+      const pad = { l: 48, r: 16, t: 16, b: 26 };
+      const plotW = w - pad.l - pad.r;
+      const plotH = h - pad.t - pad.b;
+      const max = niceMax(Math.max(...entries.map(e => e.value)) || 1);
+      const n = entries.length;
+      const xAt = i => pad.l + (n === 1 ? plotW / 2 : plotW * i / (n - 1));
+      const yAt = v => pad.t + plotH * (1 - v / max);
+
+      ctx.font = '9.5px ' + FONT;
+      for (let i = 0; i <= 3; i++) {
+        const y = pad.t + plotH * i / 3;
+        ctx.strokeStyle = i === 3 ? AXIS : GRID;
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+        ctx.fillStyle = '#7f838a';
+        ctx.textAlign = 'right';
+        ctx.fillText(compact(max - max * i / 3), pad.l - 8, y + 3);
+      }
+
+      const area = ctx.createLinearGradient(0, pad.t, 0, h - pad.b);
+      area.addColorStop(0, 'rgba(213,0,28,.14)');
+      area.addColorStop(1, 'rgba(213,0,28,0)');
+      ctx.beginPath();
+      ctx.moveTo(xAt(0), yAt(0));
+      entries.forEach((e, i) => ctx.lineTo(xAt(i), yAt(e.value)));
+      ctx.lineTo(xAt(n - 1), h - pad.b);
+      ctx.lineTo(xAt(0), h - pad.b);
+      ctx.closePath();
+      ctx.fillStyle = area;
+      ctx.fill();
+
+      ctx.beginPath();
+      entries.forEach((e, i) => {
+        if (i === 0) ctx.moveTo(xAt(i), yAt(e.value));
+        else ctx.lineTo(xAt(i), yAt(e.value));
+      });
+      ctx.strokeStyle = ACCENT;
+      ctx.lineWidth = 1.8;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      ctx.textAlign = 'center';
+      const step = Math.max(1, Math.ceil(n / 7));
+      entries.forEach((e, i) => {
+        const x = xAt(i), y = yAt(e.value);
+        ctx.beginPath();
+        ctx.arc(x, y, 2.7, 0, Math.PI * 2);
+        ctx.fillStyle = '#111318';
+        ctx.fill();
+        ctx.strokeStyle = ACCENT;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        if (i % step === 0 || i === n - 1) {
+          ctx.fillStyle = '#7f838a';
+          ctx.font = '9px ' + FONT;
+          ctx.fillText(e.label, x, h - 8);
+        }
+        canvas._hits.push({
+          test: (mx, my) => Math.hypot(mx - x, my - y) < 14,
+          html: tipHTML(e.fullLabel || e.label, fmtUSD(e.value) + ' · ' + e.count + (e.count === 1 ? ' venda' : ' vendas'))
+        });
+      });
+    }
+
+    function drawDonut(canvas, entries) {
+      const { ctx, w, h } = prep(canvas);
+      canvas._hits = [];
+      const total = entries.reduce((s, e) => s + e.value, 0);
+      if (!total) { emptyMsg(ctx, w, h); return; }
+      const cx = Math.min(w * 0.30, h * 0.92 + 40);
+      const cy = h / 2;
+      const r = Math.min(h * 0.36, w * 0.20);
+      const inner = r * 0.64;
+
+      let angle = -Math.PI / 2;
+      const slices = [];
+      entries.forEach((e, i) => {
+        const span = (e.value / total) * Math.PI * 2;
+        const a0 = angle + 0.012, a1 = angle + span - 0.012;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, a0, Math.max(a0, a1));
+        ctx.arc(cx, cy, inner, Math.max(a0, a1), a0, true);
+        ctx.closePath();
+        ctx.fillStyle = PALETTE[i % PALETTE.length];
+        ctx.fill();
+        slices.push({ a0: angle, a1: angle + span, e, color: PALETTE[i % PALETTE.length] });
+        angle += span;
+      });
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, inner - 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#14171c';
+      ctx.fill();
+      ctx.textAlign = 'center';
+      ctx.fillStyle = INK;
+      ctx.font = '600 20px ' + FONT;
+      ctx.fillText(fmtNum(total), cx, cy + 1);
+      ctx.fillStyle = MUTED;
+      ctx.font = '8px ' + FONT;
+      ctx.fillText('VENDAS', cx, cy + 15);
+
+      const lx = Math.max(cx + r + 22, w * 0.53);
+      const itemH = Math.min(21, (h - 18) / entries.length);
+      const startY = h / 2 - entries.length * itemH / 2 + itemH / 2;
+      entries.forEach((e, i) => {
+        const y = startY + i * itemH;
+        ctx.fillStyle = PALETTE[i % PALETTE.length];
+        ctx.beginPath();
+        ctx.roundRect(lx, y - 4, 7, 7, 1.5);
+        ctx.fill();
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#c9ccd1';
+        ctx.font = '9.5px ' + FONT;
+        ctx.fillText(truncate(ctx, e.label, w - lx - 70), lx + 13, y + 3);
+        ctx.fillStyle = MUTED;
+        ctx.textAlign = 'right';
+        ctx.fillText(Math.round(e.value / total * 100) + '%', w - 8, y + 3);
+      });
+
+      slices.forEach(s => {
+        canvas._hits.push({
+          test: (mx, my) => {
+            const dx = mx - cx, dy = my - cy;
+            const dist = Math.hypot(dx, dy);
+            if (dist < inner || dist > r) return false;
+            let a = (Math.atan2(dy, dx) + Math.PI / 2 + Math.PI * 2) % (Math.PI * 2);
+            const a0 = (s.a0 + Math.PI / 2 + Math.PI * 2) % (Math.PI * 2);
+            const a1 = a0 + (s.a1 - s.a0);
+            return a >= a0 && a <= a1;
+          },
+          html: tipHTML(s.e.label, s.e.value + ' vendas · ' + Math.round(s.e.value / total * 100) + '%')
+        });
+      });
+    }
+
+    function drawBarV(canvas, entries, options) {
+      const { ctx, w, h } = prep(canvas);
+      canvas._hits = [];
+      if (!entries.length) { emptyMsg(ctx, w, h); return; }
+      const colorFn = options.colorFn;
+      const pad = { l: 34, r: 10, t: 24, b: 26 };
+      const plotW = w - pad.l - pad.r;
+      const plotH = h - pad.t - pad.b;
+      const max = niceMax(Math.max(...entries.map(e => e.value)));
+      const n = entries.length;
+      const gap = Math.max(4, plotW * 0.10 / n);
+      const slot = plotW / n;
+      const bw = Math.min(42, slot - gap);
+
+      ctx.font = '9px ' + FONT;
+      for (let i = 0; i <= 3; i++) {
+        const y = pad.t + plotH * i / 3;
+        ctx.strokeStyle = i === 3 ? AXIS : GRID;
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+        ctx.fillStyle = '#7f838a';
+        ctx.textAlign = 'right';
+        ctx.fillText(String(Math.round(max - max * i / 3)), pad.l - 7, y + 3);
+      }
+
+      entries.forEach((e, i) => {
+        const bh = Math.max(2, plotH * (e.value / max));
+        const x = pad.l + slot * i + (slot - bw) / 2;
+        const y = pad.t + plotH - bh;
+        ctx.fillStyle = colorFn(e, i);
+        ctx.beginPath();
+        ctx.roundRect(x, y, bw, bh, [2, 2, 0, 0]);
+        ctx.fill();
+        ctx.fillStyle = '#d6d8dc';
+        ctx.textAlign = 'center';
+        ctx.font = '9.5px ' + FONT;
+        ctx.fillText(String(e.value), x + bw / 2, y - 6);
+        ctx.fillStyle = MUTED;
+        ctx.font = '9px ' + FONT;
+        ctx.fillText(e.label, x + bw / 2, h - 8);
+        canvas._hits.push({
+          test: (mx, my) => mx >= x - 4 && mx <= x + bw + 4 && my >= pad.t && my <= pad.t + plotH,
+          html: e.tip
+        });
+      });
+    }
+
+    function quarterLabel(key) {
+      const parts = key.split('-Q');
+      return parts[1] + 'T/' + parts[0].slice(2);
+    }
+
+    function drawAll(rows) {
+      const modelAgg = aggregateSales(rows, d => d.PorscheModelSanitized)
+        .sort((a, b) => b.revenue - a.revenue).slice(0, 10);
+      drawBarH($('modelChart'), modelAgg.map(e => ({
+        label: e.key,
+        value: e.revenue,
+        tip: tipHTML(e.key, fmtUSD(e.revenue) + ' · ' + e.units + ' vendas')
+      })), {
+        colorFn: (e, i) => i === 0 ? ACCENT : INK,
+        valueFmt: e => compact(e.value)
+      });
+
+      const valid = rows.filter(d => d.SaleDateSanitized !== 'INVALID');
+      const qMap = aggregateSales(valid, d => {
+        const m = +d.SaleDateSanitized.slice(5, 7);
+        return d.SaleDateSanitized.slice(0, 4) + '-Q' + Math.ceil(m / 3);
+      });
+      const invalidCount = rows.length - valid.length;
+      $('quarterNote').textContent = invalidCount ? invalidCount + ' sem data válida' : 'datas válidas';
+      if (qMap.length) {
+        qMap.sort((a, b) => a.key.localeCompare(b.key));
+        const minParts = qMap[0].key.split('-Q').map(Number);
+        const maxParts = qMap[qMap.length - 1].key.split('-Q').map(Number);
+        const filled = [];
+        let y = minParts[0], q = minParts[1];
+        while (y < maxParts[0] || (y === maxParts[0] && q <= maxParts[1])) {
+          const key = y + '-Q' + q;
+          const found = qMap.find(e => e.key === key);
+          filled.push({ key, unitCount: found ? found.units : 0, value: found ? found.revenue : 0 });
+          q++;
+          if (q > 4) { q = 1; y++; }
+        }
+        drawLine($('quarterChart'), filled.map(e => ({
+          label: quarterLabel(e.key),
+          fullLabel: 'Trimestre ' + quarterLabel(e.key),
+          value: e.value,
+          count: e.unitCount
+        })));
+      } else {
+        drawLine($('quarterChart'), []);
+      }
+
+      const payAgg = aggregateSales(rows, d => d.PayMethodSanitized).sort(sortByUnits);
+      drawDonut($('payChart'), payAgg.map(e => ({ label: payLabel(e.key), value: e.units })));
+
+      const statusAgg = aggregateSales(rows, d => d.DeliveryStatusSanitized).sort(sortByUnits);
+      const totalRows = rows.length;
+      drawBarH($('statusChart'), statusAgg.map(e => ({
+        key: e.key,
+        label: statusLabel(e.key),
+        value: e.units,
+        tip: tipHTML(statusLabel(e.key), e.units + ' vendas · ' + Math.round(e.units / totalRows * 100) + '% do total')
+      })), {
+        colorFn: e => STATUS_COLORS[e.key] || '#7a7d84',
+        valueFmt: e => String(e.value),
+        axisFmt: v => String(Math.round(v))
+      });
+
+      const stateAgg = aggregateSales(rows, d => d.StateSanitized).sort(sortByUnits).slice(0, 10);
+      drawBarV($('stateChart'), stateAgg.map(e => ({
+        label: e.key,
+        value: e.units,
+        tip: tipHTML(e.key, e.units + ' vendas · ' + fmtUSD(e.revenue))
+      })), { colorFn: (e, i) => i === 0 ? ACCENT : INK });
+
+      const yearAgg = aggregateSales(rows, d => d.ModelYearSanitized).sort((a, b) => a.key - b.key);
+      const yearLeader = yearAgg.reduce((m, e) => (!m || e.units > m.units) ? e : m, null);
+      $('yearNote').textContent = yearLeader ? 'líder: ' + yearLeader.key : 'unidades por ano';
+      drawBarV($('yearChart'), yearAgg.map(e => ({
+        key: e.key,
+        label: String(e.key),
+        value: e.units,
+        tip: tipHTML('Ano ' + e.key, e.units + ' vendas · ' + fmtUSD(e.revenue))
+      })), { colorFn: e => (yearLeader && e.key === yearLeader.key) ? ACCENT : INK });
+    }
+
+    function renderAll() {
+      const rows = dashboardRows();
+      renderKPIs(rows);
+      renderInsightCities(rows);
+      renderInsightYear(rows);
+      renderInsightCity(rows);
+      renderTable();
+      $('resultCount').innerHTML = '<b>' + rows.length + '</b> veículos';
+      drawAll(rows);
+    }
+
+    ['modelChart', 'quarterChart', 'payChart', 'statusChart', 'stateChart', 'yearChart'].forEach(id => bindTip($(id)));
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => drawAll(dashboardRows()), 120);
+    });
+
+    $('footNote').textContent = 'Fonte: porsche_database_sanitized.xlsx · valores em USD · ' +
+      DATA.filter(d => d.SaleDateSanitized === 'INVALID').length +
+      ' registros sem data válida não entram nas análises temporais';
+
+    renderAll();
+
+  </script>
+</body>
+
+</html>

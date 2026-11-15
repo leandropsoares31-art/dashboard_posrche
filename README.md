@@ -84,6 +84,7 @@ Tabela completa com as 100 vendas, rolagem própria, cabeçalho fixo, chips sem�
 │       └── porsche-sanitizer.md      # Configuração do agente de saneamento
 ├── tools/
 │   └── sanitize_porsche.py           # Pipeline de higienização e validação
+├── index.html                        # Página inicial do GitHub Pages (redireciona ao dashboard)
 ├── porsche_dashboard.html            # Dashboard interativo (single-file)
 ├── porsche_database.xlsx             # Base bruta de vendas
 ├── porsche_database_sanitized.xlsx   # Base tratada, com colunas normalizadas
@@ -116,9 +117,11 @@ Acesse `http://localhost:8000/porsche_dashboard.html`.
 1. Envie o repositório para o GitHub.
 2. Em **Settings → Pages**, selecione **Deploy from a branch**.
 3. Escolha a branch `main` e a pasta `/ (root)`.
-4. Acesse `https://<usuario>.github.io/<repositorio>/porsche_dashboard.html`.
+4. Acesse `https://<usuario>.github.io/<repositorio>/`.
 
-Para servir o dashboard como página inicial, renomeie o arquivo para `index.html`.
+O arquivo [`index.html`](index.html) é a página inicial e redireciona automaticamente para o dashboard. O arquivo `.nojekyll` desativa o processamento do Jekyll, garantindo que os arquivos sejam servidos como estão.
+
+O dashboard também pode ser acessado diretamente em `https://<usuario>.github.io/<repositorio>/porsche_dashboard.html`.
 
 ---
 
